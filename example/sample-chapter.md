@@ -1,0 +1,64 @@
+<!-- Sample chapter generated from a real WaniKani level-5 inventory
+     (168 kanji known). Every kanji passed scripts/validate.py against that
+     inventory; the four gloss-box words are the chapter's entire new-word
+     budget. Three editions per chapter, printed separately: this learner page,
+     the .furigana.md self-check edition, the .en.md answer key. -->
+
+---
+toc: false
+fontsize: 14pt
+documentclass: extarticle
+---
+
+# 夜の穴 — その1「青い光」
+
+<!-- story -->
+雨の夜だった。
+ケンは十三才の男の子だ。小さい村にいる。
+マルはケンの犬だ。大きくない。でも、力がある。
+ケンはマルと、林の近くを走った。
+すると、林の中から音がした。
+「マル、今の音、何？」
+「ワン！」
+マルは林に入った。
+「あ！マル！」
+ケンも入った。
+夜の林は、青かった。
+林の中に、青い光が見えた。
+光は、山の下の穴から出た。
+雨は止まった。空に月が出た。
+草の上に、古い石があった。四角で、白い。
+石の上に字がある。
+「王の宝は、この下にある。お金も、ある。」
+「宝…！」
+ケンは考えた。「王？この山の下に？」
+ケンの心はドキドキした。
+マルの耳が立った。
+穴の中から、音がした。
+大きい足の音だ。
+音が近くなった。
+ケンの体は、止まった。
+「マル、走るよ！」
+でも、マルは走らなかった。
+マルは穴の口に立って、こう言った。
+「ケン、入るよ。」
+え？犬が言った？！
+
+つづく
+
+**Q:** つぎは？ A: マルと穴に入る / B: 村へ走る
+<!-- /story -->
+
+---
+
+**ことば**（あたらしいことば）
+
+| ことば | よみ | いみ |
+|---|---|---|
+| 男の子 | おとこのこ | boy |
+| 青い | あおい | blue |
+| 近く | ちかく | near, nearby |
+| つづく | — | to be continued |
+
+---
+*この話は、きみが知っている漢字168字だけで書かれている。*

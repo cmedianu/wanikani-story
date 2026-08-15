@@ -1,0 +1,22 @@
+# Credentials — never commit
+.token
+token
+*.token
+
+# Local planning docs (contain learner-specific details)
+specs/
+
+# Local config and learner data live in ~/.config/wanikani-story/ by default,
+# but guard against accidental in-repo copies too
+config.json
+data/
+cache/
+inventory.json
+series/
+
+# Python
+__pycache__/
+*.pyc
+
+# OS noise
+.DS_Store

@@ -1,0 +1,77 @@
+---
+toc: false
+fontsize: 14pt
+documentclass: extarticle
+header-includes: |
+  \usepackage{stackengine}
+  \usepackage{setspace}
+  \setstretch{1.9}
+  \newcommand{\ruby}[2]{\stackon[2.5pt]{#1}{\footnotesize #2}}
+---
+
+<!-- Sample chapter generated from a real WaniKani level-5 inventory
+     (168 kanji known). Every kanji passed scripts/validate.py against that
+     inventory; the four gloss-box words are the chapter's entire new-word
+     budget. Three editions per chapter, printed separately: this learner page,
+     the .furigana.md self-check edition, the .en.md answer key. -->
+
+---
+toc: false
+fontsize: 14pt
+documentclass: extarticle
+---
+
+# 夜の穴 — その1「青い光」
+
+<!-- story -->
+\ruby{雨}{あめ}の\ruby{夜}{よる}だった。
+ケンは\ruby{十}{じゅう}\ruby{三}{さん}\ruby{才}{さい}の\ruby{男の子}{おとこのこ}だ。\ruby{小}{ちい}さい\ruby{村}{むら}にいる。
+マルはケンの\ruby{犬}{いぬ}だ。\ruby{大}{おお}きくない。でも、\ruby{力}{ちから}がある。
+ケンはマルと、\ruby{林}{はやし}の\ruby{近}{ちか}くを\ruby{走}{はし}った。
+すると、\ruby{林}{はやし}の\ruby{中}{なか}から\ruby{音}{おと}がした。
+「マル、\ruby{今}{いま}の\ruby{音}{おと}、\ruby{何}{なに}？」
+「ワン！」
+マルは\ruby{林}{はやし}に\ruby{入}{はい}った。
+「あ！マル！」
+ケンも\ruby{入}{はい}った。
+\ruby{夜}{よる}の\ruby{林}{はやし}は、\ruby{青}{あお}かった。
+\ruby{林}{はやし}の\ruby{中}{なか}に、\ruby{青}{あお}い\ruby{光}{ひかり}が\ruby{見}{み}えた。
+\ruby{光}{ひかり}は、\ruby{山}{やま}の\ruby{下}{した}の\ruby{穴}{あな}から\ruby{出}{で}た。
+\ruby{雨}{あめ}は\ruby{止}{と}まった。\ruby{空}{そら}に\ruby{月}{つき}が\ruby{出}{で}た。
+\ruby{草}{くさ}の\ruby{上}{うえ}に、\ruby{古}{ふる}い\ruby{石}{いし}があった。\ruby{四角}{しかく}で、\ruby{白}{しろ}い。
+\ruby{石}{いし}の\ruby{上}{うえ}に\ruby{字}{じ}がある。
+「\ruby{王}{おう}の\ruby{宝}{たから}は、この\ruby{下}{した}にある。お\ruby{金}{かね}も、ある。」
+「\ruby{宝}{たから}…！」
+ケンは\ruby{考}{かんが}えた。「\ruby{王}{おう}？この\ruby{山}{やま}の\ruby{下}{した}に？」
+ケンの\ruby{心}{こころ}はドキドキした。
+マルの\ruby{耳}{みみ}が\ruby{立}{た}った。
+\ruby{穴}{あな}の\ruby{中}{なか}から、\ruby{音}{おと}がした。
+\ruby{大}{おお}きい\ruby{足}{あし}の\ruby{音}{おと}だ。
+\ruby{音}{おと}が\ruby{近}{ちか}くなった。
+ケンの\ruby{体}{からだ}は、\ruby{止}{と}まった。
+「マル、\ruby{走}{はし}るよ！」
+でも、マルは\ruby{走}{はし}らなかった。
+マルは\ruby{穴}{あな}の\ruby{口}{くち}に\ruby{立}{た}って、こう\ruby{言}{い}った。
+「ケン、\ruby{入}{はい}るよ。」
+え？\ruby{犬}{いぬ}が\ruby{言}{い}った？！
+
+つづく
+
+**Q:** つぎは？ A: マルと\ruby{穴}{あな}に\ruby{入}{はい}る / B: \ruby{村}{むら}へ\ruby{走}{はし}る
+<!-- /story -->
+
+---
+
+\newpage
+
+**ことば**（あたらしいことば）
+
+| ことば | よみ | いみ |
+|---|---|---|
+| 男の子 | おとこのこ | boy |
+| 青い | あおい | blue |
+| 近く | ちかく | near, nearby |
+| つづく | — | to be continued |
+
+---
+*この\ruby{話}{はなし}は、きみが\ruby{知}{し}っている\ruby{漢字}{かんじ}168\ruby{字}{じ}だけで\ruby{書}{か}かれている。*

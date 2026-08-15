@@ -1,0 +1,28 @@
+{
+  "_comment": "Copy to ~/.config/wanikani-story/config.json and edit. Never commit your real config.",
+
+  "token_path": "~/.config/wanikani-story/token",
+  "data_dir": "~/.config/wanikani-story",
+
+  "grammar_tier": "T0",
+  "grammar_notes": "Optional free-text nuance, e.g. 'trial te-form, no relative clauses'.",
+
+  "learner": {
+    "name": "Kenta",
+    "age": 13,
+    "interests": ["manga", "gaming", "dinosaurs"],
+    "native_language": "English"
+  },
+
+  "story": {
+    "length_chars": [300, 450],
+    "max_sentence_chars": 20,
+    "max_new_words": 5,
+    "featured_min": 3
+  },
+
+  "allowlist_extra": [],
+
+  "render_cmd": null,
+  "_render_cmd_help": "Optional shell command to convert a chapter to PDF/print, e.g. 'md2pdf {file}'. {file} is replaced with the chapter path."
+}
