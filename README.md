@@ -125,8 +125,9 @@ data.
 ## Credits
 
 The character-consistency pattern (locked prose spec + reference model sheet
-passed as an image ref on every render) and the CLI-subscription image backend
-mechanics are adapted from Trevin Chow's [illo-skill](https://github.com/tmchow/illo-skill) (MIT).
+passed as an image ref on every render) and the technique for generating images
+through a logged-in Codex or Grok CLI are adapted from Trevin Chow's
+[illo-skill](https://github.com/tmchow/illo-skill) (MIT).
 
 ## License
 
