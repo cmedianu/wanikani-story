@@ -71,6 +71,9 @@ def annotate_line(line, tagger):
             nxt = line[idx + 1:idx + 2]
             if nxt in ("", "？", "?", "。", "、", "」"):
                 kana = "ナニ"
+        # UniDic reads 言う/言え as spoken ユウ/ユエ; written furigana is イウ/イエ
+        if surface.startswith("言") and kana and kana.startswith("ユ"):
+            kana = "イ" + kana[1:]
         if KANJI_RE.search(surface) and kana and kana != "*":
             out.append(ruby_word(surface, kata_to_hira(kana)))
         else:

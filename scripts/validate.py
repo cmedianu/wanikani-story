@@ -116,6 +116,10 @@ def check_words(story, inv, gloss, extra_allow):
         # katakana-only tokens: loanwords/SFX/names — free flavor, skip
         if re.fullmatch(r"[゠-ヿー]+", surface):
             continue
+        # multi-token gloss phrases (e.g. ひさしぶり → ひさし+ぶり): a token that
+        # only occurs inside a declared gloss phrase is covered by that gloss
+        if any(surface in g for g in gloss):
+            continue
         unknown.setdefault(orth_base if JA_RE.search(orth_base) else surface,
                            []).append(surface)
     return unknown, True
