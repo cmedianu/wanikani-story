@@ -1,0 +1,91 @@
+#!/bin/bash
+#
+# md2pdf - Convert Markdown files to PDF via pandoc + tectonic.
+#
+# Sample render_cmd for this skill: set "render_cmd": "path/to/bin/md2pdf {file}"
+# in your config to use this instead of the built-in WeasyPrint renderer
+# (scripts/render.py). LaTeX typesets long tables slightly tighter; it needs
+# pandoc, tectonic, and a CJK font (auto-detected below, default IPAPGothic —
+# check yours with `fc-list :lang=ja`).
+#
+# Usage: md2pdf <input.md> [output.pdf]
+#        md2pdf <input.md>  # outputs to same name with .pdf extension
+#
+
+set -euo pipefail
+
+if ! command -v pandoc &> /dev/null; then
+    echo "Error: pandoc is not installed"
+    echo "Install with: sudo apt-get install pandoc"
+    exit 1
+fi
+
+if ! command -v tectonic &> /dev/null; then
+    cat <<'EOF' >&2
+Error: tectonic is not installed.
+
+Install the static binary into ~/.local/bin (no root required):
+
+  mkdir -p ~/.local/bin
+  url=$(curl -fsSL https://api.github.com/repos/tectonic-typesetting/tectonic/releases/latest \
+        | grep -oE '"https://[^"]*x86_64-unknown-linux-musl\.tar\.gz"' \
+        | tr -d '"' | head -1)
+  curl -fsSL "$url" | tar -xz -C ~/.local/bin
+  chmod +x ~/.local/bin/tectonic
+  tectonic --version
+
+Make sure ~/.local/bin is on your PATH.
+EOF
+    exit 1
+fi
+
+if [ $# -lt 1 ] || [ $# -gt 2 ]; then
+    echo "Usage: $0 <input.md> [output.pdf]"
+    echo ""
+    echo "Examples:"
+    echo "  $0 document.md                # Creates document.pdf"
+    echo "  $0 document.md output.pdf     # Creates output.pdf"
+    exit 1
+fi
+
+INPUT="$1"
+
+if [ ! -f "$INPUT" ]; then
+    echo "Error: Input file '$INPUT' not found"
+    exit 1
+fi
+
+if [ $# -eq 2 ]; then
+    OUTPUT="$2"
+else
+    OUTPUT="${INPUT%.md}.pdf"
+fi
+
+echo "Converting: $INPUT -> $OUTPUT"
+
+# CJK support: DejaVu has no CJK glyphs (renders as empty rectangles), so if the
+# document contains Japanese/Chinese/Korean, set CJKmainfont (pandoc's template
+# then loads xeCJK). Font must exist locally: check with `fc-list :lang=ja`.
+CJK_ARGS=()
+if grep -qP '[\x{3040}-\x{30FF}\x{4E00}-\x{9FFF}\x{AC00}-\x{D7AF}]' "$INPUT"; then
+    CJK_ARGS=(-V CJKmainfont="IPAPGothic")
+fi
+
+pandoc "$INPUT" \
+    -o "$OUTPUT" \
+    --pdf-engine=tectonic \
+    --toc \
+    --toc-depth=3 \
+    --highlight-style=tango \
+    -V mainfont="DejaVu Serif" \
+    -V monofont="DejaVu Sans Mono" \
+    "${CJK_ARGS[@]}" \
+    -V geometry:margin=1in
+
+if [ -f "$OUTPUT" ]; then
+    echo "✓ Successfully created: $OUTPUT"
+    ls -lh "$OUTPUT"
+else
+    echo "✗ Conversion failed"
+    exit 1
+fi

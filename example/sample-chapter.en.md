@@ -1,6 +1,8 @@
 ---
 toc: false
 fontsize: 12pt
+hyperrefoptions:
+  - bookmarks=false
 ---
 
 # 夜の穴 — Chapter 1 "Blue Light" — English

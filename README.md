@@ -31,6 +31,12 @@ This skill:
 - **Adapts from comprehension feedback** — a 60-second verbal retell after each
   chapter (plus the coherence of their A/B choice) tells the generator what didn't
   land; failed words come back in friendlier contexts, silently.
+- **Optionally illustrates each chapter** — one B&W manga panel with a
+  *consistent recurring cast* (locked character specs + a reference model sheet
+  on every render), generated free through a logged-in Codex/Grok CLI or via
+  OpenRouter. Panels show the chapter's setup, never the cliffhanger — the image
+  is the hook to start reading, not a substitute for it. Hard rule: no text in
+  images (AI pseudo-kanji would break the "every character is known" promise).
 
 ## Setup
 
@@ -57,7 +63,16 @@ This skill:
    a furigana edition, and a separate English answer key.
 
 Requirements: Python 3.9+ (fetcher is stdlib-only), [`uv`](https://docs.astral.sh/uv/)
-for the word-level validator (`fugashi` + `unidic-lite`, fetched on demand).
+for the word-level validator (`fugashi` + `unidic-lite`, fetched on demand). PDF
+rendering works out of the box via WeasyPrint (`scripts/render.py`, pulled by `uv`;
+needs the system Pango library — preinstalled on desktop Linux, `brew install pango`
+on macOS). Prefer LaTeX output? A sample pandoc+tectonic wrapper ships in
+`bin/md2pdf` — point `render_cmd` at it ("`/path/to/bin/md2pdf {file}`") and it's
+used instead; LaTeX typesets long tables slightly tighter.
+
+On Windows, run the skill under WSL: `bin/md2pdf` is a bash script, and WeasyPrint
+on native Windows needs a separately installed GTK/Pango runtime. Everything works
+out of the box in a WSL Ubuntu shell.
 
 ## The one important knob: grammar tier
 
@@ -94,14 +109,25 @@ generation loops until clean.
 ```
 SKILL.md                  # the workflow Claude follows
 config.example.json       # copy to ~/.config/wanikani-story/config.json
+bin/md2pdf                  # sample pandoc+tectonic render_cmd (CJK auto-detect)
+characters/FORMAT.md        # cast-pack format for consistent chapter illustrations
 scripts/fetch_inventory.py  # WaniKani API → inventory.json (stdlib only)
 scripts/validate.py         # story vs inventory (kanji hard-check + fugashi word check)
 scripts/furigana.py         # learner page → furigana edition (ruby over every kanji)
+scripts/illustrate.py       # prompt + reference sheet → one panel (codex/grok/openrouter)
+scripts/render.py           # chapter markdown → PDF (WeasyPrint; no LaTeX needed)
 ```
 
-All learner data (token, profile, generated chapters, series state) lives under
-`~/.config/wanikani-story/` — the repo contains no personal data.
+All learner data (token, profile, generated chapters, series state, character
+sheets) lives under `~/.config/wanikani-story/` — the repo contains no personal
+data.
+
+## Credits
+
+The character-consistency pattern (locked prose spec + reference model sheet
+passed as an image ref on every render) and the CLI-subscription image backend
+mechanics are adapted from Trevin Chow's [illo-skill](https://github.com/tmchow/illo-skill) (MIT).
 
 ## License
 
-MIT
+[MIT](LICENSE)

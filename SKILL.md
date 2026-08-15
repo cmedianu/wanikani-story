@@ -54,7 +54,13 @@ Series live in `<data_dir>/series/<slug>/`. `state.json` schema:
   grammar tier.
 - **New series:** offer a genre menu built from `learner.interests` (5–6 vivid
   premises, one line each). The learner picks genre and protagonist name (their own
-  name/handle in katakana works well). Create the state file.
+  name/handle in katakana works well). Create the state file. If `image.enabled`,
+  also create the **cast pack** now (format: `characters/FORMAT.md` in this skill's
+  directory): write `<series>/character/cast.md` (1–3 locked characters), render a
+  cast model sheet with `scripts/illustrate.py` (all cast, neutral standing, white
+  background, the pack's style block, the NO-TEXT block), get the user's approval,
+  save as `<series>/character/reference.png`. It is the permanent image ref for
+  every panel — never regenerate it casually.
 - Every 4–5 chapters, offer the optional "boss level": the learner writes a full
   English translation, reviewed together, ideally attached to a reward. Never make
   it routine or required. Diff it sentence-by-sentence; record misses in
@@ -110,7 +116,43 @@ uv run --with fugashi --with unidic-lite <skill_dir>/scripts/validate.py \
 - fugashi unavailable (no `uv`)? The kanji check still ran — deliver only if exit 0,
   and note that word-level checking was skipped.
 
-## 5. Render — three files, printed separately
+## 5. Illustrate (optional — only when config `image.enabled`)
+
+One manga panel per chapter, cast kept consistent via the series cast pack
+(`<series>/character/` — see `characters/FORMAT.md`). Skip entirely when disabled;
+the chapter must never block on image failures — deliver text-only and say so.
+
+- **Scene choice:** the chapter's *setup or mood*, or the visible consequence of
+  the learner's last A/B pick (a reward for choosing). NEVER the cliffhanger or
+  its resolution — an image that summarizes the plot lets a reluctant reader skip
+  the text.
+- **Prompt:** one paragraph scene description (who, where, doing what, mood) +
+  the verbatim **Prompt spec** block of each cast member in the scene + the
+  pack's STYLE block + the NO-TEXT block from `characters/FORMAT.md` + an aspect
+  note (16:9 wide panel). Incidental characters are described inline.
+- **Generate** (backend auto-resolves: Codex CLI → Grok CLI → OpenRouter key):
+
+```bash
+python3 <skill_dir>/scripts/illustrate.py --prompt-file /tmp/panel.txt \
+  --ref <series>/character/reference.png [--ref <series>/style-anchor.png] \
+  --out <series>/NNN-<slug>.png
+```
+
+- **QA — reject and re-roll if:** any text/writing/pseudo-kanji appears anywhere
+  (hard rule — garbled kanji breaks the "every character is known" contract);
+  a cast member is off-model; the scene spoils the cliffhanger.
+- The series' first accepted panel is copied to `<series>/style-anchor.png` and
+  passed as a second `--ref` on all later chapters, so the serial reads as one
+  artist.
+- **Embed** in the learner page AND (via regeneration) the furigana page —
+  between the title heading and `<!-- story -->`, absolute path (pandoc resolves
+  relative to CWD, not the file):
+
+```markdown
+![](/abs/path/to/NNN-<slug>.png){width=65%}
+```
+
+## 6. Render — three files, printed separately
 
 The translation only works as an answer key if it can be physically withheld, and a
 furigana edition lets the learner self-check readings without the answer key. Write
@@ -123,6 +165,8 @@ TWO files into `<data_dir>/series/<slug>/`; the third is generated:
 toc: false
 fontsize: 14pt
 documentclass: extarticle
+hyperrefoptions:
+  - bookmarks=false
 ---
 
 # <Series title> — その<N>「<chapter title>」
@@ -172,6 +216,8 @@ like ここ・この if it runs long).
 ---
 toc: false
 fontsize: 12pt
+hyperrefoptions:
+  - bookmarks=false
 ---
 
 # <Series title> — Chapter <N> "<chapter title>" — English
@@ -194,13 +240,19 @@ regenerate after any change to the learner file.
 - The A/B question is *in Japanese inside the story region* — it must pass validation
   too. The gloss box may include English meanings; it sits outside the story markers.
 - Footer count = `len(inventory.kanji)`; it grows with the learner — leave it in.
-- If `render_cmd` is set in config, run it on ALL THREE files ({file} substituted) so
-  each prints separately. Blank line before any markdown list (pandoc quirk). The
-  PDF engine must handle CJK fonts (for pandoc/LaTeX: a `CJKmainfont` the system has).
+- Render ALL THREE files to PDF so each prints separately:
+  - If `render_cmd` is set in config, run it per file ({file} substituted). Blank
+    line before any markdown list (pandoc quirk). The PDF engine must handle CJK
+    fonts (for pandoc/LaTeX: a `CJKmainfont` the system has).
+  - Otherwise use the built-in renderer (WeasyPrint; needs system Pango, no LaTeX):
 
-## 6. Update state
+    ```bash
+    uv run --with weasyprint --with markdown-it-py <skill_dir>/scripts/render.py <file.md>
+    ```
+
+## 7. Update state
 
 Bump `chapter`, append the new choice options, merge gloss words into
 `gloss_history` (increment `uses`), update `threads`/`world` if the plot moved.
 Confirm to the user: chapter path, validation summary (kanji ✓, N gloss words,
-featured items used), and the PDF path if rendered.
+featured items used), whether a panel was generated, and the PDF path if rendered.

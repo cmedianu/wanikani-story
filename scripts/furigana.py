@@ -24,6 +24,8 @@ FRONT_MATTER = """\
 toc: false
 fontsize: 14pt
 documentclass: extarticle
+hyperrefoptions:
+  - bookmarks=false
 header-includes: |
   \\usepackage{stackengine}
   \\usepackage{setspace}
@@ -105,20 +107,37 @@ def main():
 
     src = Path(args.chapter)
     text = src.read_text()
-    # drop an existing front matter block; we write our own
-    text = re.sub(r"\A---\n.*?\n---\n", "", text, flags=re.S)
+    # drop an existing front matter block (even below leading HTML comments,
+    # e.g. the repo example's header note); we write our own
+    text = re.sub(r"\A(\s*(?:<!--.*?-->\s*)*)---\n.*?\n---\n", r"\1", text,
+                  flags=re.S)
 
     lines = []
     broke_page = False
+    story_ended = False
     for l in text.splitlines():
-        # ruby line-spacing inflates the page; break before the gloss box so the
-        # story is page 1 and gloss + footer are page 2 (never a mid-table split)
-        if l.strip() == "\\newpage":
-            broke_page = True
-        if not broke_page and l.lstrip().startswith("**ことば**"):
+        s = l.strip()
+        # ruby line-spacing inflates the page: give the story (+ panel + A/B
+        # choice) page 1 to itself, and start a fresh page at the first rule
+        # after the story so the footer and the word tables travel together.
+        # Literal \newpage lines after that are dropped (they'd re-split them).
+        if s == "<!-- /story -->":
+            story_ended = True
+        if story_ended and not broke_page and s == "---":
             lines.append("\\newpage")
             lines.append("")
             broke_page = True
+        if broke_page and s == "\\newpage":
+            continue
+        if not broke_page and s.startswith("**ことば**"):
+            lines.append("\\newpage")
+            lines.append("")
+            broke_page = True
+        # shrink the embedded chapter panel so the taller ruby lines still
+        # leave the whole story on page 1
+        if s.startswith("!["):
+            lines.append(re.sub(r"\{width=[^}]+\}", "{width=50%}", l))
+            continue
         lines.append(l if skip_line(l) else annotate_line(l, tagger))
     out = Path(args.output) if args.output else src.with_suffix("").with_suffix("")
     if not args.output:
