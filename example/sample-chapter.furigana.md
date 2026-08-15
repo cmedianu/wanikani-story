@@ -61,6 +61,7 @@ documentclass: extarticle
 <!-- /story -->
 
 ---
+*この\ruby{話}{はなし}は、きみが\ruby{知}{し}っている\ruby{漢字}{かんじ}168\ruby{字}{じ}だけで\ruby{書}{か}かれている。*
 
 \newpage
 
@@ -73,5 +74,30 @@ documentclass: extarticle
 | 近く | ちかく | near, nearby |
 | つづく | — | to be continued |
 
----
-*この\ruby{話}{はなし}は、きみが\ruby{知}{し}っている\ruby{漢字}{かんじ}168\ruby{字}{じ}だけで\ruby{書}{か}かれている。*
+**つなぎことば**（ちいさいことば）
+
+| ことば | いみ |
+|---|---|
+| 〜は | "as for …" (points at the topic) |
+| 〜が | marks who/what does it |
+| 〜を | marks what it's done to |
+| 〜の | 's / of （ケンの犬 = Ken's dog） |
+| 〜に | to, into |
+| 〜で | in, at (where it happens) |
+| 〜と | and, with |
+| 〜も | too, also |
+| 〜へ | toward, to |
+| 〜から | from; because |
+| 〜だ・だった | is ・ was |
+| 〜た | (did — past) |
+| 〜て | …and (links two actions) |
+| 〜ない・なかった | not ・ didn't |
+| でも | but |
+| すると | just then… |
+| 何 | what? |
+| ある・いる | there is (thing ・ person/animal) |
+| この | this ~ |
+| こう | like this |
+| 〜よ | ! (I'm telling you) |
+| え？・あっ！ | huh?! ・ ah! |
+| つぎ | next |

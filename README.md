@@ -24,6 +24,10 @@ This skill:
 - **Makes it a serial, not a worksheet** — manga-register chapters, cliffhangers,
   and an A/B choice at the end of each chapter that steers the next one. The English
   translation is a separate answer-key file, printed only when you choose to.
+- **Includes a decoder ring, not just a gloss** — every chapter's word sheet has a
+  つなぎことば table listing each particle, conjunction, and glue word the story
+  actually uses, with kid-friendly meanings. A learner who parses "nouns + verbs
+  only" can look up what the は・が・を between them are doing.
 - **Adapts from comprehension feedback** — a 60-second verbal retell after each
   chapter (plus the coherence of their A/B choice) tells the generator what didn't
   land; failed words come back in friendlier contexts, silently.

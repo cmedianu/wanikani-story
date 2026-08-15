@@ -113,6 +113,8 @@ def main():
     for l in text.splitlines():
         # ruby line-spacing inflates the page; break before the gloss box so the
         # story is page 1 and gloss + footer are page 2 (never a mid-table split)
+        if l.strip() == "\\newpage":
+            broke_page = True
         if not broke_page and l.lstrip().startswith("**ことば**"):
             lines.append("\\newpage")
             lines.append("")

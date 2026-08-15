@@ -103,6 +103,10 @@ uv run --with fugashi --with unidic-lite <skill_dir>/scripts/validate.py \
 - Long sentences → split; rerun.
 - `featured_used_count` < minimum → work more featured items in; rerun.
 - Repeat until exit 0 and the unknown-word list ⊆ declared gloss. Only then deliver.
+- Cross-check `glue_used` against the chapter's つなぎことば decoder table (see §5) —
+  every reported item must be covered by a row. The tokenizer splits fused
+  connectives (でも → で+も, だから → だ+から, すると → する+と); one row for the
+  fused word as the reader meets it covers its pieces.
 - fugashi unavailable (no `uv`)? The kanji check still ran — deliver only if exit 0,
   and note that word-level checking was skipped.
 
@@ -132,6 +136,9 @@ documentclass: extarticle
 <!-- /story -->
 
 ---
+*この話は、きみが知っている漢字<N>字だけで書かれている。*
+
+\newpage
 
 **ことば**（あたらしいことば）
 
@@ -139,9 +146,25 @@ documentclass: extarticle
 |---|---|---|
 | … | … | … |
 
----
-*この話は、きみが知っている漢字<N>字だけで書かれている。*
+**つなぎことば**（ちいさいことば）
+
+| ことば | いみ |
+|---|---|
+| 〜は | "as for …" (points at the topic) |
+| 〜が | marks who/what does it |
+| でも | but |
+| … | … |
 ```
+
+The **つなぎことば** decoder table lists EVERY particle, conjunction, copula, and
+kana glue word that actually appears in the story (the validator reports them as
+`glue_used`) — one row each, particles written 〜は style, meanings short and
+kid-friendly. A learner who reads "nouns + verbs only" uses this table to decode
+sentence structure; it is a recurring reference, not new vocabulary — it costs
+nothing against the gloss budget and repeats every chapter. The `\newpage` keeps
+the story (with its kanji-count badge) on page 1 and the whole word sheet on
+page 2, so they print cleanly — keep the sheet to one page (merge related rows
+like ここ・この if it runs long).
 
 **`NNN-<slug>.en.md` — the adult's answer key:**
 

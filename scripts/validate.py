@@ -81,11 +81,14 @@ def check_kanji(story, known_kanji):
 
 def check_words(story, inv, gloss, extra_allow):
     """Tokenize and diff content words against known vocabulary. Returns
-    (unknown_words, checked) — checked False when no tokenizer available."""
+    (unknown_words, glue_used, checked) — checked False when no tokenizer
+    available. glue_used lists particles/conjunctions/copulae and allowlisted
+    glue words actually present, so the chapter's つなぎことば decoder table
+    can be built (and checked) mechanically."""
     try:
         import fugashi  # noqa
     except ImportError:
-        return {}, False
+        return {}, [], False
     tagger = fugashi.Tagger()
 
     known = set(inv["vocab"]) | set(inv["kana_vocab"]) | set(inv["kanji"])
@@ -95,8 +98,13 @@ def check_words(story, inv, gloss, extra_allow):
     content_pos = {"名詞", "動詞", "形容詞", "形状詞", "副詞", "接尾辞", "連体詞"}
 
     unknown = {}
+    glue = set()
     for word in tagger(story):
         pos1 = word.feature.pos1
+        if (pos1 in ("助詞", "接続詞", "助動詞", "代名詞")
+                and JA_RE.search(word.surface)):
+            glue.add(word.surface)
+            continue
         if pos1 not in content_pos:
             continue
         if pos1 == "名詞" and word.feature.pos2 in ("固有名詞", "数詞"):
@@ -109,6 +117,9 @@ def check_words(story, inv, gloss, extra_allow):
         hira = kata_to_hira(surface)
         candidates = {surface, lemma, orth_base, hira, kata_to_hira(orth_base),
                       unicodedata.normalize("NFKC", lemma).split("-")[0]}
+        if candidates & ALLOWLIST:
+            glue.add(min(candidates & ALLOWLIST))  # dictionary form, not stem
+            continue
         if candidates & (known | allow):
             continue
         if hira in known_readings or kata_to_hira(orth_base) in known_readings:
@@ -122,7 +133,7 @@ def check_words(story, inv, gloss, extra_allow):
             continue
         unknown.setdefault(orth_base if JA_RE.search(orth_base) else surface,
                            []).append(surface)
-    return unknown, True
+    return unknown, sorted(glue), True
 
 
 def main():
@@ -147,7 +158,7 @@ def main():
     story, had_markers = extract_story(chap_path.read_text())
 
     kanji_violations = check_kanji(story, set(inv["kanji"]))
-    unknown_words, words_checked = check_words(story, inv, gloss, [])
+    unknown_words, glue_used, words_checked = check_words(story, inv, gloss, [])
 
     # stats
     ja_chars = JA_RE.findall(story)
@@ -164,6 +175,7 @@ def main():
         "words_checked": words_checked,
         "unknown_words": {k: v[:3] for k, v in unknown_words.items()},
         "unknown_word_count": len(unknown_words),
+        "glue_used": glue_used,
         "new_word_budget": args.max_new,
         "gloss_declared": gloss,
         "japanese_chars": len(ja_chars),
@@ -194,6 +206,9 @@ def main():
                 print(f"  {w}  (as: {', '.join(dict.fromkeys(surfaces))})")
         else:
             print("words: all in inventory/gloss/allowlist ✓")
+        if glue_used:
+            print(f"glue used ({len(glue_used)} — decoder table should cover "
+                  f"these): {'、'.join(glue_used)}")
         if long_sentences:
             print(f"long sentences (>20 ja chars): {len(long_sentences)}")
             for s in long_sentences[:3]:

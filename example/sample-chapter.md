@@ -50,6 +50,9 @@ documentclass: extarticle
 <!-- /story -->
 
 ---
+*この話は、きみが知っている漢字168字だけで書かれている。*
+
+\newpage
 
 **ことば**（あたらしいことば）
 
@@ -60,5 +63,30 @@ documentclass: extarticle
 | 近く | ちかく | near, nearby |
 | つづく | — | to be continued |
 
----
-*この話は、きみが知っている漢字168字だけで書かれている。*
+**つなぎことば**（ちいさいことば）
+
+| ことば | いみ |
+|---|---|
+| 〜は | "as for …" (points at the topic) |
+| 〜が | marks who/what does it |
+| 〜を | marks what it's done to |
+| 〜の | 's / of （ケンの犬 = Ken's dog） |
+| 〜に | to, into |
+| 〜で | in, at (where it happens) |
+| 〜と | and, with |
+| 〜も | too, also |
+| 〜へ | toward, to |
+| 〜から | from; because |
+| 〜だ・だった | is ・ was |
+| 〜た | (did — past) |
+| 〜て | …and (links two actions) |
+| 〜ない・なかった | not ・ didn't |
+| でも | but |
+| すると | just then… |
+| 何 | what? |
+| ある・いる | there is (thing ・ person/animal) |
+| この | this ~ |
+| こう | like this |
+| 〜よ | ! (I'm telling you) |
+| え？・あっ！ | huh?! ・ ah! |
+| つぎ | next |
