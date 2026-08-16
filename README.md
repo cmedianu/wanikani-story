@@ -22,8 +22,10 @@ This skill:
   tokenizer-backed validator (`fugashi`) loops generation until the story is provably
   readable. One unreadable character breaks a learner's trust; zero ship.
 - **Makes it a serial, not a worksheet** — manga-register chapters, cliffhangers,
-  and an A/B choice at the end of each chapter that steers the next one. The English
-  translation is a separate answer-key file, printed only when you choose to.
+  and an A/B choice at the end of each chapter that steers the next one. The
+  translation is a separate answer-key file, printed only when you choose to — and
+  `translations` in the config takes as many languages as your household needs, so a
+  second adult can follow along in theirs.
 - **Includes a decoder ring, not just a gloss** — every chapter's word sheet has a
   つなぎことば table listing each particle, conjunction, and glue word the story
   actually uses, with kid-friendly meanings. A learner who parses "nouns + verbs
@@ -57,10 +59,11 @@ This skill:
    ln -s "$(pwd)" ~/.claude/skills/wanikani-story
    ```
 
-4. In Claude Code: *"new chapter"*, *"start a new story series"*, or *"Luca picked B
+4. In Claude Code: *"new chapter"*, *"start a new story series"*, or *"Kenta picked B
    and said the dog found a door"* — the skill handles sync → feedback → generate →
-   validate → render. Each chapter yields three printable files: the learner's page,
-   a furigana edition, and a separate English answer key.
+   validate → render. Each chapter yields the learner's page, a furigana edition, and
+   one answer key per language in `translations` — each a separate PDF, so the key
+   can be withheld until the retell is done.
 
 Requirements: Python 3.9+ (fetcher is stdlib-only), [`uv`](https://docs.astral.sh/uv/)
 for the word-level validator (`fugashi` + `unidic-lite`, fetched on demand). PDF
