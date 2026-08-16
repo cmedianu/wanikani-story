@@ -11,20 +11,26 @@ Word-level checking needs a tokenizer. Run with:
   uv run --with fugashi --with unidic-lite scripts/validate.py CHAPTER.md [options]
 Without fugashi it degrades to kanji-check only (still authoritative for the hard rule).
 
-The story body is the text between <!-- story --> and <!-- /story --> markers;
-without markers, the whole file is scanned (gloss/translation sections would then
-trigger false positives — use the markers).
+The kanji hard check runs on the WHOLE file — title, gloss tables, and the
+kanji-count badge reach the learner too, so they obey the same constraint
+(write meta text in kana when its kanji are unknown). Word/grammar checks run
+on the story body only: the text between <!-- story --> and <!-- /story -->
+markers (without markers the whole file is scanned and gloss/translation
+sections trigger false positives — use the markers).
 
 Options:
+  --config PATH      default $WANIKANI_STORY_CONFIG or ~/.config/wanikani-story/
+                     config.json; supplies allowlist_extra and the story.* knobs
   --inventory PATH   default ~/.config/wanikani-story/inventory.json
   --gloss w1,w2      words declared in the chapter's gloss box (allowed as new words)
-  --max-new N        new-word budget (default 5)
+  --max-new N        new-word budget (default: config story.max_new_words, else 5)
   --json             machine-readable output
 Exit: 0 clean, 1 kanji violations present, 2 usage/input error.
 """
 
 import argparse
 import json
+import os
 import re
 import sys
 import unicodedata
@@ -84,11 +90,12 @@ def check_words(story, inv, gloss, extra_allow):
     (unknown_words, glue_used, checked) — checked False when no tokenizer
     available. glue_used lists particles/conjunctions/copulae and allowlisted
     glue words actually present, so the chapter's つなぎことば decoder table
-    can be built (and checked) mechanically."""
+    can be built (and checked) mechanically. seen_forms carries every token's
+    surface/lemma/orthBase so featured items can be matched even conjugated."""
     try:
         import fugashi  # noqa
     except ImportError:
-        return {}, [], False
+        return {}, [], set(), False
     tagger = fugashi.Tagger()
 
     known = set(inv["vocab"]) | set(inv["kana_vocab"]) | set(inv["kanji"])
@@ -99,8 +106,11 @@ def check_words(story, inv, gloss, extra_allow):
 
     unknown = {}
     glue = set()
+    seen_forms = set()
     for word in tagger(story):
         pos1 = word.feature.pos1
+        seen_forms.update(x for x in (word.surface, word.feature.lemma,
+                                      word.feature.orthBase) if x)
         if (pos1 in ("助詞", "接続詞", "助動詞", "代名詞")
                 and JA_RE.search(word.surface)):
             glue.add(word.surface)
@@ -133,16 +143,19 @@ def check_words(story, inv, gloss, extra_allow):
             continue
         unknown.setdefault(orth_base if JA_RE.search(orth_base) else surface,
                            []).append(surface)
-    return unknown, sorted(glue), True
+    return unknown, sorted(glue), seen_forms, True
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("chapter")
+    ap.add_argument("--config",
+                    default=os.environ.get("WANIKANI_STORY_CONFIG",
+                                           "~/.config/wanikani-story/config.json"))
     ap.add_argument("--inventory",
                     default="~/.config/wanikani-story/inventory.json")
     ap.add_argument("--gloss", default="")
-    ap.add_argument("--max-new", type=int, default=5)
+    ap.add_argument("--max-new", type=int, default=None)
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
 
@@ -155,18 +168,35 @@ def main():
     inv = json.loads(inv_path.read_text())
     gloss = [g.strip() for g in args.gloss.split(",") if g.strip()]
 
-    story, had_markers = extract_story(chap_path.read_text())
+    cfg_path = Path(args.config).expanduser()
+    cfg = json.loads(cfg_path.read_text()) if cfg_path.exists() else {}
+    story_cfg = cfg.get("story", {})
+    extra_allow = cfg.get("allowlist_extra", [])
+    max_new = args.max_new if args.max_new is not None \
+        else story_cfg.get("max_new_words", 5)
+    max_sentence = story_cfg.get("max_sentence_chars", 20)
+    featured_min = story_cfg.get("featured_min", 3)
 
-    kanji_violations = check_kanji(story, set(inv["kanji"]))
-    unknown_words, glue_used, words_checked = check_words(story, inv, gloss, [])
+    full_text = chap_path.read_text()
+    story, had_markers = extract_story(full_text)
+
+    # hard kanji rule covers the WHOLE page (title, tables, badge line),
+    # not just the story body — everything printed reaches the learner
+    kanji_violations = check_kanji(full_text, set(inv["kanji"]))
+    unknown_words, glue_used, seen_forms, words_checked = \
+        check_words(story, inv, gloss, extra_allow)
 
     # stats
     ja_chars = JA_RE.findall(story)
     sentences = [s.strip() for s in re.split(r"[。！？\n]", story)
                  if JA_RE.search(s or "")]
-    long_sentences = [s for s in sentences if len(JA_RE.findall(s)) > 20]
+    long_sentences = [s for s in sentences
+                      if len(JA_RE.findall(s)) > max_sentence]
+    # substring match catches nouns; seen_forms catches conjugated verbs
+    # (featured 走る appearing only as 走った still counts)
     featured_used = sorted({f["characters"] for f in inv.get("featured", [])
-                            if f["characters"] in story})
+                            if f["characters"] in story
+                            or f["characters"] in seen_forms})
 
     result = {
         "ok": not kanji_violations,
@@ -176,13 +206,15 @@ def main():
         "unknown_words": {k: v[:3] for k, v in unknown_words.items()},
         "unknown_word_count": len(unknown_words),
         "glue_used": glue_used,
-        "new_word_budget": args.max_new,
+        "new_word_budget": max_new,
         "gloss_declared": gloss,
         "japanese_chars": len(ja_chars),
         "sentences": len(sentences),
         "long_sentences": long_sentences,
         "featured_used": featured_used,
         "featured_used_count": len(featured_used),
+        "featured_min": featured_min,
+        "featured_ok": len(featured_used) >= featured_min,
     }
 
     if args.json:
@@ -200,7 +232,7 @@ def main():
             print("words: NOT CHECKED (fugashi unavailable — run under "
                   "`uv run --with fugashi --with unidic-lite`)")
         elif unknown_words:
-            over = "OVER BUDGET" if len(unknown_words) > args.max_new else "within budget"
+            over = "OVER BUDGET" if len(unknown_words) > max_new else "within budget"
             print(f"words: {len(unknown_words)} outside inventory+gloss ({over}):")
             for w, surfaces in unknown_words.items():
                 print(f"  {w}  (as: {', '.join(dict.fromkeys(surfaces))})")
@@ -210,12 +242,12 @@ def main():
             print(f"glue used ({len(glue_used)} — decoder table should cover "
                   f"these): {'、'.join(glue_used)}")
         if long_sentences:
-            print(f"long sentences (>20 ja chars): {len(long_sentences)}")
+            print(f"long sentences (>{max_sentence} ja chars): {len(long_sentences)}")
             for s in long_sentences[:3]:
                 print(f"  {s[:40]}")
-        print(f"featured items used: {len(featured_used)} "
-              f"({''.join(featured_used[:10])}…)" if featured_used
-              else "featured items used: 0")
+        mark = "✓" if len(featured_used) >= featured_min else "BELOW MINIMUM"
+        print(f"featured items used: {len(featured_used)}/{featured_min} {mark}"
+              + (f" ({'、'.join(featured_used[:10])}…)" if featured_used else ""))
 
     sys.exit(1 if kanji_violations else 0)
 

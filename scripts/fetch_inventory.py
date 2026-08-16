@@ -22,7 +22,8 @@ import urllib.request
 from pathlib import Path
 
 API = "https://api.wanikani.com/v2"
-DEFAULT_CONFIG = "~/.config/wanikani-story/config.json"
+DEFAULT_CONFIG = os.environ.get("WANIKANI_STORY_CONFIG",
+                                "~/.config/wanikani-story/config.json")
 SRS_NAMES = {
     0: "lesson", 1: "apprentice1", 2: "apprentice2", 3: "apprentice3",
     4: "apprentice4", 5: "guru1", 6: "guru2", 7: "master",
