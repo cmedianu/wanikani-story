@@ -66,9 +66,26 @@ echo "Converting: $INPUT -> $OUTPUT"
 # CJK support: DejaVu has no CJK glyphs (renders as empty rectangles), so if the
 # document contains Japanese/Chinese/Korean, set CJKmainfont (pandoc's template
 # then loads xeCJK). Font must exist locally: check with `fc-list :lang=ja`.
+#
+# xeCJK also claims the shared Unicode punctuation (dashes, curly quotes,
+# apostrophes) for the CJK font, which mangles Latin prose in the same document:
+# an em dash renders as a CJK 一-lookalike and an apostrophe picks up CJK
+# inter-character glue ("it' s"). Bilingual files — the translated answer keys,
+# an English grammar guide quoting Japanese — hit this on every line, so hand
+# those code points back to the Latin font.
+# The char-class fix goes in --include-before-body, NOT the preamble: both
+# -V header-includes and --include-in-header write the same template variable, so
+# either one silently discards a document's own header-includes — and the furigana
+# edition defines its \ruby macro there. \xeCJKDeclareCharClass is a runtime
+# setting, so declaring it at the top of the body works just as well.
 CJK_ARGS=()
+CJK_FIX=""
 if grep -qP '[\x{3040}-\x{30FF}\x{4E00}-\x{9FFF}\x{AC00}-\x{D7AF}]' "$INPUT"; then
-    CJK_ARGS=(-V CJKmainfont="IPAPGothic")
+    CJK_FIX=$(mktemp -t md2pdf-cjk-XXXXXX.tex)
+    trap 'rm -f "$CJK_FIX"' EXIT
+    printf '%s\n' '\xeCJKDeclareCharClass{Default}{"2013,"2014,"2018,"2019,"201C,"201D}' \
+        > "$CJK_FIX"
+    CJK_ARGS=(-V CJKmainfont="IPAPGothic" --include-before-body="$CJK_FIX")
 fi
 
 pandoc "$INPUT" \
