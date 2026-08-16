@@ -23,6 +23,9 @@
 
   "allowlist_extra": [],
 
+  "translations": { "en": "English" },
+  "_translations_help": "Answer-key languages, as file-suffix code -> language name. One PDF per entry (NNN-slug.en.md, NNN-slug.ro.md, ...), each translated from the Japanese. Useful when a second adult in the house reads a different language. Omit for English only.",
+
   "render_cmd": null,
   "_render_cmd_help": "Optional shell command to convert a chapter to PDF, e.g. 'md2pdf {file}'. {file} is replaced with the chapter path. When null, the built-in WeasyPrint renderer (scripts/render.py) is used.",
 

@@ -52,6 +52,11 @@ Series live in `<data_dir>/series/<slug>/`. `state.json` schema:
   `failed_items`/`failed_patterns` from the retell — a misparse shows up as a wrong
   or missing plot point. If two consecutive chapters show stalls, silently drop one
   grammar tier.
+- **Ask for the markup.** The highest-value signal is the learner's own pen: hand
+  back the printed chapter and ask them to underline every word or ending they
+  didn't understand. That markup (a photo of the page is enough) drives the decoder
+  guide in §8 — and a chapter is not "done" until its marks are answered. Do not
+  generate the next chapter while an unanswered markup is outstanding.
 - **New series:** offer a genre menu built from `learner.interests` (5–6 vivid
   premises, one line each). The learner picks genre and protagonist name (their own
   name/handle in katakana works well). Create the state file. If `image.enabled`,
@@ -62,7 +67,8 @@ Series live in `<data_dir>/series/<slug>/`. `state.json` schema:
   save as `<series>/character/reference.png`. It is the permanent image ref for
   every panel — never regenerate it casually.
 - Every 4–5 chapters, offer the optional "boss level": the learner writes a full
-  English translation, reviewed together, ideally attached to a reward. Never make
+  translation (in any configured `translations` language — see §6), reviewed
+  together against that language's answer key, ideally attached to a reward. Never make
   it routine or required. Diff it sentence-by-sentence; record misses in
   `comprehension` with `mode: "translation"`.
 
@@ -152,11 +158,13 @@ python3 <skill_dir>/scripts/illustrate.py --prompt-file /tmp/panel.txt \
 ![](/abs/path/to/NNN-<slug>.png){width=65%}
 ```
 
-## 6. Render — three files, printed separately
+## 6. Render — the chapter file set, printed separately
 
-The translation only works as an answer key if it can be physically withheld, and a
+A translation only works as an answer key if it can be physically withheld, and a
 furigana edition lets the learner self-check readings without the answer key. Write
-TWO files into `<data_dir>/series/<slug>/`; the third is generated:
+the learner's page and one answer key per configured language into
+`<data_dir>/series/<slug>/`; the furigana edition is generated from the validated
+learner file.
 
 **`NNN-<slug>.md` — the learner's page (Japanese only, larger type):**
 
@@ -210,7 +218,15 @@ the story (with its kanji-count badge) on page 1 and the whole word sheet on
 page 2, so they print cleanly — keep the sheet to one page (merge related rows
 like ここ・この if it runs long).
 
-**`NNN-<slug>.en.md` — the adult's answer key:**
+**`NNN-<slug>.<code>.md` — the answer keys, one per configured language:**
+
+Config `translations` maps a file-suffix code to a language name; when the key is
+absent, default to `{"en": "English"}`. Write ONE file per entry, all from the same
+Japanese source — never translate a translation.
+
+```json
+"translations": {"en": "English", "ro": "Romanian"}
+```
 
 ```markdown
 ---
@@ -220,12 +236,23 @@ hyperrefoptions:
   - bookmarks=false
 ---
 
-# <Series title> — Chapter <N> "<chapter title>" — English
+# <Series title> — Chapter <N> "<chapter title>" — <language name>
 
 <translation, line-for-line so misparses are easy to pinpoint during the retell>
 
 **Next time:** A: <choice A> / B: <choice B>
 ```
+
+- Line-for-line means line-for-line **in every language** — the whole point is
+  pointing at a line during the retell, so the keys must stay row-aligned with each
+  other and with the Japanese. End every body line with **two trailing spaces**
+  (markdown hard break) or the renderer reflows the whole key into one prose blob
+  and the alignment is lost.
+- Translate the *register*, not the words: manga narration, a 13-year-old's voice,
+  natural in the target language. Sound effects stay as they'd read in that
+  language's comics (ワン → "Woof!" / "Ham!").
+- Non-English keys often exist for a second household adult, so they must stand
+  alone — never leave English fragments in them.
 
 **`NNN-<slug>.furigana.md` — generated from the FINAL validated learner file:**
 
@@ -240,7 +267,8 @@ regenerate after any change to the learner file.
 - The A/B question is *in Japanese inside the story region* — it must pass validation
   too. The gloss box may include English meanings; it sits outside the story markers.
 - Footer count = `len(inventory.kanji)`; it grows with the learner — leave it in.
-- Render ALL THREE files to PDF so each prints separately:
+- Render EVERY file in the set to PDF so each prints separately (learner page,
+  furigana edition, and each language's answer key):
   - If `render_cmd` is set in config, run it per file ({file} substituted). Blank
     line before any markdown list (pandoc quirk). The PDF engine must handle CJK
     fonts (for pandoc/LaTeX: a `CJKmainfont` the system has).
@@ -256,3 +284,35 @@ Bump `chapter`, append the new choice options, merge gloss words into
 `gloss_history` (increment `uses`), update `threads`/`world` if the plot moved.
 Confirm to the user: chapter path, validation summary (kanji ✓, N gloss words,
 featured items used), whether a panel was generated, and the PDF path if rendered.
+
+## 8. Decoder guide — when the learner marks up a chapter
+
+WaniKani teaches zero grammar, so at some point the grammar has to be taught outright.
+Do it **against a chapter they have already read and liked**, never as an abstract
+lesson — the story supplies the motivation and every example sentence.
+
+Trigger: the learner hands back a marked-up chapter (see §2). Write
+`<data_dir>/series/<slug>/NNN-<slug>.guide.md` and render it like any other file.
+
+- **Answer every single mark, in reading order, and nothing else.** The marks are the
+  syllabus. Do not "round out" the grammar with unmarked points — an underline is a
+  question actually asked, and a guide that answers questions nobody asked reads as
+  homework.
+- **Lead with the one rule that collapses the most marks.** Cluster first: a page of
+  underlines is usually two or three patterns, not twelve unrelated facts. Teach that
+  rule up front, then let each mark be an instance of it.
+- **Every example comes from their chapter**, quoted exactly as printed.
+- Useful sections, in this order: the big rule; a cheat-sheet table of the shapes;
+  each mark one at a time (sentence, breakdown, translation); a full verb table for
+  the chapter (story form → dictionary form → meaning, self-quizzable by covering a
+  column); the glue-word table; and 4–6 self-check questions with answers.
+- Written in the learner's native language, not Japanese — this is the one artifact
+  that is allowed to be, and must be, entirely in a language they read fluently.
+
+**Then the next chapter reinforces it.** Record the taught points in `comprehension`,
+raise `grammar_tier` if they landed, and set `grammar_notes` to reinforcement mode:
+re-use exactly those patterns, one conjugation per sentence, recurring verbs, at least
+one clear instance of each taught shape. Add a third table to that chapter's word
+sheet — **おぼえて！** — mapping each shape from the guide to the line it appears on in
+the new chapter, so guide and chapter cross-reference each other. If the next markup
+shows the same shapes failing again, drop the tier back rather than re-teaching.
