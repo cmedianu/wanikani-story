@@ -297,6 +297,15 @@ regenerate after any change to the learner file.
 
 Bump `chapter`, append the new choice options, merge gloss words into
 `gloss_history` (increment `uses`), update `threads`/`world` if the plot moved.
+
+**Checkpoint:** if `data_dir` is a git repository, commit everything after each
+delivered chapter, guide, or state change (`git add -A && git commit -m
+"chapter N: <slug>"` or similar) and push if a remote is configured. Best-effort —
+never block delivery on git. These commits are what make a state rollback (wrong
+chapter baked in, comprehension model disproved) a one-command revert instead of
+hand surgery, and the committed `inventory.json` history doubles as a record of the
+learner's growth over time.
+
 Confirm to the user: chapter path, validation summary (kanji ✓, N gloss words,
 featured items used), whether a panel was generated, and the PDF path if rendered.
 
