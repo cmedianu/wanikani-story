@@ -3,9 +3,9 @@
 token
 *.token
 
-# Local planning docs (contain learner-specific details).
-# Now a symlink into the private wanikani-story-private repo — no trailing
-# slash, or the pattern would match only a real directory, not the link.
+# Local planning docs (contain learner-specific details). May be a symlink
+# into a private repo — no trailing slash, or the pattern would match only
+# a real directory, not the link.
 specs
 
 # Local config and learner data live in ~/.config/wanikani-story/ by default,

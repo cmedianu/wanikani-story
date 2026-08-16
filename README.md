@@ -53,6 +53,12 @@ This skill:
    chmod 600 ~/.config/wanikani-story/token
    ```
 
+   Recommended: make the data dir a **private** git repo (`git init`, and
+   gitignore `token` and `cache/`). The skill then auto-commits after every
+   chapter — a botched state update becomes a one-command revert, and the
+   committed `inventory.json` history doubles as a record of your learner's
+   growth. Keep it private: everything in it is personal.
+
 3. Install the skill:
 
    ```bash
