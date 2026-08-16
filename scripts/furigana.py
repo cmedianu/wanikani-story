@@ -24,13 +24,13 @@ FRONT_MATTER = """\
 toc: false
 fontsize: 14pt
 documentclass: extarticle
-hyperrefoptions:
+{pagefooter}hyperrefoptions:
   - bookmarks=false
 header-includes: |
-  \\usepackage{stackengine}
-  \\usepackage{setspace}
-  \\setstretch{1.9}
-  \\newcommand{\\ruby}[2]{\\stackon[2.5pt]{#1}{\\footnotesize #2}}
+  \\usepackage{{stackengine}}
+  \\usepackage{{setspace}}
+  \\setstretch{{1.9}}
+  \\newcommand{{\\ruby}}[2]{{\\stackon[2.5pt]{{#1}}{{\\footnotesize #2}}}}
 ---
 
 """
@@ -107,6 +107,10 @@ def main():
 
     src = Path(args.chapter)
     text = src.read_text()
+    # carry the learner page's per-page identity footer over, tagged so the
+    # two visually similar editions can be told apart when pages get mixed up
+    pf = re.search(r"^pagefooter:\s*(.+)$", text[:2000], re.M)
+    pagefooter = (f"pagefooter: {pf.group(1).strip()} · ふりがな\n" if pf else "")
     # drop an existing front matter block (even below leading HTML comments,
     # e.g. the repo example's header note); we write our own
     text = re.sub(r"\A(\s*(?:<!--.*?-->\s*)*)---\n.*?\n---\n", r"\1", text,
@@ -142,7 +146,8 @@ def main():
     out = Path(args.output) if args.output else src.with_suffix("").with_suffix("")
     if not args.output:
         out = src.parent / (src.name[:-3] + ".furigana.md")
-    out.write_text(FRONT_MATTER + "\n".join(lines) + "\n")
+    out.write_text(FRONT_MATTER.format(pagefooter=pagefooter)
+                   + "\n".join(lines) + "\n")
     print(out)
 
 

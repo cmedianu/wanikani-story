@@ -110,6 +110,11 @@ uv run --with fugashi --with unidic-lite <skill_dir>/scripts/validate.py \
   <chapter.md> --gloss "word1,word2" [--json]
 ```
 
+- The kanji hard check covers the WHOLE file — title, gloss tables, badge line —
+  not just the story region; anything printed reaches the learner. Word checks
+  stay inside the story markers. The validator reads `allowlist_extra` and the
+  `story.*` knobs from config automatically (`--config` / `WANIKANI_STORY_CONFIG`
+  to override).
 - Exit 1 (unknown kanji) → rewrite the offending words in kana or rephrase; rerun.
 - Unknown words over budget → replace with known vocabulary or cut; rerun.
 - Long sentences → split; rerun.
@@ -173,6 +178,7 @@ learner file.
 toc: false
 fontsize: 14pt
 documentclass: extarticle
+pagefooter: <series title> その<N>
 hyperrefoptions:
   - bookmarks=false
 ---
@@ -188,7 +194,7 @@ hyperrefoptions:
 <!-- /story -->
 
 ---
-*この話は、きみが知っている漢字<N>字だけで書かれている。*
+*このはなしは、きみがしっているかんじ<N>じだけでかかれている。*
 
 \newpage
 
@@ -232,6 +238,7 @@ Japanese source — never translate a translation.
 ---
 toc: false
 fontsize: 12pt
+pagefooter: <series title> その<N> · <CODE>
 hyperrefoptions:
   - bookmarks=false
 ---
@@ -266,7 +273,15 @@ regenerate after any change to the learner file.
 
 - The A/B question is *in Japanese inside the story region* — it must pass validation
   too. The gloss box may include English meanings; it sits outside the story markers.
-- Footer count = `len(inventory.kanji)`; it grows with the learner — leave it in.
+- Badge count = `len(inventory.kanji)`; it grows with the learner — leave it in. The
+  badge line (and every other line on the page — title, tables) must obey the kanji
+  constraint like the story does; the validator checks the whole file. Write meta
+  text in kana unless its kanji are known.
+- **`pagefooter`** goes in every file's front matter: `<series title> その<N>` plus an
+  edition tag (`· EN` / `· RO` / `· guide`; the furigana edition tags itself; the
+  learner page carries no tag). Both renderers print it with a page number at every
+  page bottom, so a pile of mixed-up printed pages can be re-sorted by hand. Keep it
+  plain text — no LaTeX special characters.
 - Render EVERY file in the set to PDF so each prints separately (learner page,
   furigana edition, and each language's answer key):
   - If `render_cmd` is set in config, run it per file ({file} substituted). Blank
@@ -292,7 +307,8 @@ Do it **against a chapter they have already read and liked**, never as an abstra
 lesson — the story supplies the motivation and every example sentence.
 
 Trigger: the learner hands back a marked-up chapter (see §2). Write
-`<data_dir>/series/<slug>/NNN-<slug>.guide.md` and render it like any other file.
+`<data_dir>/series/<slug>/NNN-<slug>.guide.md` and render it like any other file
+(front matter: `pagefooter: <series title> その<N> · guide`).
 
 - **Answer every single mark, in reading order, and nothing else.** The marks are the
   syllabus. Do not "round out" the grammar with unmarked points — an underline is a

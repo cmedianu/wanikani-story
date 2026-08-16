@@ -95,7 +95,8 @@ a reluctant reader that reading isn't for them.
 
 Three layers, because "only kanji they know" is necessary but not sufficient:
 
-1. **Character level (hard):** every kanji in the story ∈ the learner's started set.
+1. **Character level (hard):** every kanji on the page — story, title, word tables,
+   even the kanji-count badge — ∈ the learner's started set.
    Words whose kanji are unknown are written in kana — no furigana crutches
    in the story itself (the separate furigana edition is a self-check aid, not a
    license to use unknown kanji).

@@ -13,6 +13,7 @@
 toc: false
 fontsize: 14pt
 documentclass: extarticle
+pagefooter: 夜の穴 その1
 hyperrefoptions:
   - bookmarks=false
 ---
@@ -59,7 +60,7 @@ hyperrefoptions:
 <!-- /story -->
 
 ---
-*この話は、きみが知っている漢字168字だけで書かれている。*
+*このはなしは、きみがしっているかんじ168じだけでかかれている。*
 
 \newpage
 

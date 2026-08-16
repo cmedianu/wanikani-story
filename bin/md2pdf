@@ -78,14 +78,38 @@ echo "Converting: $INPUT -> $OUTPUT"
 # either one silently discards a document's own header-includes — and the furigana
 # edition defines its \ruby macro there. \xeCJKDeclareCharClass is a runtime
 # setting, so declaring it at the top of the body works just as well.
+BODY_INJECT=$(mktemp -t md2pdf-inject-XXXXXX.tex)
+trap 'rm -f "$BODY_INJECT"' EXIT
+: > "$BODY_INJECT"
+
 CJK_ARGS=()
-CJK_FIX=""
 if grep -qP '[\x{3040}-\x{30FF}\x{4E00}-\x{9FFF}\x{AC00}-\x{D7AF}]' "$INPUT"; then
-    CJK_FIX=$(mktemp -t md2pdf-cjk-XXXXXX.tex)
-    trap 'rm -f "$CJK_FIX"' EXIT
     printf '%s\n' '\xeCJKDeclareCharClass{Default}{"2013,"2014,"2018,"2019,"201C,"201D}' \
-        > "$CJK_FIX"
-    CJK_ARGS=(-V CJKmainfont="IPAPGothic" --include-before-body="$CJK_FIX")
+        >> "$BODY_INJECT"
+    CJK_ARGS=(-V CJKmainfont="IPAPGothic")
+fi
+
+# Per-page identity footer: a `pagefooter: <text>` front-matter key puts
+# "<text> · p.N" at every page bottom, so mixed-up printed pages can be
+# re-sorted (series + chapter + edition live in the text). Redefining
+# \@oddfoot works from the body, so this rides the same before-body file —
+# do not move it into the preamble (see header-includes trap above).
+PAGEFOOTER=$(sed -n '1,40p' "$INPUT" | sed -n 's/^pagefooter:[[:space:]]*//p' \
+    | head -1 | sed -e 's/^["'\'']//' -e 's/["'\'']$//')
+if [ -n "$PAGEFOOTER" ]; then
+    ESC=$(printf '%s' "$PAGEFOOTER" \
+        | sed -e 's/\\/\\textbackslash{}/g' -e 's/[&%$#_{}]/\\&/g')
+    cat >> "$BODY_INJECT" <<EOF
+\\makeatletter
+\\def\\@oddfoot{\\hfil\\scriptsize ${ESC} · p.\\thepage\\hfil}
+\\let\\@evenfoot\\@oddfoot
+\\makeatother
+EOF
+fi
+
+INJECT_ARGS=()
+if [ -s "$BODY_INJECT" ]; then
+    INJECT_ARGS=(--include-before-body="$BODY_INJECT")
 fi
 
 pandoc "$INPUT" \
@@ -97,6 +121,7 @@ pandoc "$INPUT" \
     -V mainfont="DejaVu Serif" \
     -V monofont="DejaVu Sans Mono" \
     "${CJK_ARGS[@]}" \
+    "${INJECT_ARGS[@]}" \
     -V geometry:margin=1in
 
 if [ -f "$OUTPUT" ]; then

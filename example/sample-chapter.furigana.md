@@ -2,6 +2,7 @@
 toc: false
 fontsize: 14pt
 documentclass: extarticle
+pagefooter: 夜の穴 その1 · ふりがな
 hyperrefoptions:
   - bookmarks=false
 header-includes: |
@@ -67,7 +68,7 @@ header-includes: |
 \newpage
 
 ---
-*この\ruby{話}{はなし}は、きみが\ruby{知}{し}っている\ruby{漢字}{かんじ}168\ruby{字}{じ}だけで\ruby{書}{か}かれている。*
+*このはなしは、きみがしっているかんじ168じだけでかかれている。*
 
 
 **ことば**（あたらしいことば）
