@@ -16,12 +16,14 @@
 
   "story": {
     "length_chars": [300, 450],
-    "max_sentence_chars": 20,
+    "max_sentence_chars": 28,
     "max_new_words": 5,
-    "featured_min": 3
+    "featured_min": 3,
+    "wordpack_min": 4
   },
 
   "allowlist_extra": [],
+  "_allowlist_extra_help": "Pre-taught kana words the generator may use freely, without spending gloss budget. Do not hand-edit: run 'python3 scripts/wordpack.py' to install a pack from wordpacks/ — it drops words the learner already knows and writes a printable sheet. Without a pack, chapters start repeating themselves around chapter 3, because WaniKani's low levels are noun-heavy (hundreds of nouns, ~60 verbs).",
 
   "translations": { "en": "English" },
   "_translations_help": "Answer-key languages, as file-suffix code -> language name. One PDF per entry (NNN-slug.en.md, NNN-slug.ro.md, ...), each translated from the Japanese. Useful when a second adult in the house reads a different language. Omit for English only.",

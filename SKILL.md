@@ -17,11 +17,23 @@ directory, obtain a read-only API token from wanikani.com → Settings → API T
 store it at `token_path`, fill in the learner profile. `data_dir` (default
 `~/.config/wanikani-story/`) holds inventory, cache, and series.
 
+**Word pack (once per learner).** If `allowlist_extra` is empty, install one after
+the first inventory sync — `python3 <skill_dir>/scripts/wordpack.py --render` —
+and tell the user to print the sheet it writes. Without it the generator has only
+WaniKani's vocabulary to work with, which at low levels is overwhelmingly nouns,
+and chapters start repeating themselves around chapter 3. See §3.
+
 ## 1. Sync inventory (every run)
 
 ```bash
 python3 <skill_dir>/scripts/fetch_inventory.py
+python3 <skill_dir>/scripts/fetch_activity.py --quiet
 ```
+
+The second call snapshots study activity. It is not needed to write a chapter, but
+per-day review volume cannot be recovered from the API after the fact — only
+diffed between snapshots — so taking one on every run is what keeps the
+`wanikani-progress` history dense. Never block a chapter on it.
 
 Read `<data_dir>/inventory.json`. Key fields: `kanji` (the hard character set),
 `vocab` + `kana_vocab` (the word set), `featured` (apprentice/guru items learned
@@ -61,11 +73,16 @@ Series live in `<data_dir>/series/<slug>/`. `state.json` schema:
   premises, one line each). The learner picks genre and protagonist name (their own
   name/handle in katakana works well). Create the state file. If `image.enabled`,
   also create the **cast pack** now (format: `characters/FORMAT.md` in this skill's
-  directory): write `<series>/character/cast.md` (1–3 locked characters), render a
-  cast model sheet with `scripts/illustrate.py` (all cast, neutral standing, white
-  background, the pack's style block, the NO-TEXT block), get the user's approval,
-  save as `<series>/character/reference.png`. It is the permanent image ref for
-  every panel — never regenerate it casually.
+  directory): write `<series>/character/cast.md` (1–3 locked characters and the
+  `Style:` line), render a cast model sheet with `scripts/illustrate.py` (all cast,
+  neutral standing, white background, the pack's style block, the NO-TEXT block),
+  get the user's approval, save as `<series>/character/reference.<style>.png`. It is
+  the permanent image ref for every panel — never regenerate it casually.
+  For a **color** style, run the grayscale check in `characters/FORMAT.md` on the
+  sheet *before* asking for approval — chapters print on a B&W printer by default,
+  and touching areas of equal lightness merge into one shape there. Record the
+  measured values in the pack's **Colors** bullet; re-roll if two touching areas
+  are too close.
 - Every 4–5 chapters, offer the optional "boss level": the learner writes a full
   translation (in any configured `translations` language — see §6), reviewed
   together against that language's answer key, ideally attached to a reward. Never make
@@ -79,8 +96,9 @@ Write the chapter in Japanese under ALL of these constraints:
 **Hard (validator-enforced):**
 - Every kanji character ∈ `inventory.kanji`. No exceptions, no furigana workaround —
   a word whose kanji is unknown is written in kana or avoided.
-- Every content word ∈ `vocab` ∪ `kana_vocab` ∪ gloss list. Gloss list ≤
-  `story.max_new_words`, each entry kana-only or composed of known kanji.
+- Every content word ∈ `vocab` ∪ `kana_vocab` ∪ `allowlist_extra` (the kana word
+  pack) ∪ gloss list. Gloss list ≤ `story.max_new_words`, each entry kana-only or
+  composed of known kanji.
 - Chapter titles/headers obey the same constraints (e.g. 「その3」, not 第三話 —
   第/話 are typically unknown at low levels).
 
@@ -92,11 +110,22 @@ Write the chapter in Japanese under ALL of these constraints:
 - **T2** — + 〜ている, 〜たい, simple relative clauses.
 
 **Shape:**
-- 300–450 Japanese characters (`story.length_chars`). Sentences ≤ ~20 chars.
+- 300–450 Japanese characters (`story.length_chars`). Sentences ≤
+  `story.max_sentence_chars`.
 - Dialogue-heavy manga register: 「…」lines, katakana SFX (ドキドキ、ガタガタ —
   free flavor, no gloss needed if obvious).
 - Names in katakana (free). Numerals free.
 - Feature ≥ `story.featured_min` recently-learned items naturally.
+- Use ≥ `story.wordpack_min` distinct words from `allowlist_extra` (skip this rule
+  if the pack is not installed — offer to install one instead, §0). **This is the
+  main lever against repetitive chapters.** WaniKani's low levels are noun-heavy —
+  a level-6 learner has hundreds of nouns but only ~60 verbs and ~35 adjectives,
+  none of which are run/hide/find/shout/grab. The kana word pack supplies those.
+  A word written in kana is readable whether or not WaniKani has taught it, which
+  is exactly how Japanese children's books work: hard limits on kanji, none on kana
+  vocabulary. Pack words are pre-taught on a printed sheet, so they cost no gloss
+  budget — reach for them freely rather than rewriting the same scene with 入る and
+  見る. The kanji rule above is never relaxed; only the word rule is.
 - Recycle `gloss_history` words with `uses < 3` before introducing new gloss words.
 - End on a cliffhanger + a two-option choice (A/B) that steers the next chapter.
 - Adapt around `comprehension`: re-expose previously failed items in friendlier
@@ -137,24 +166,30 @@ the chapter must never block on image failures — deliver text-only and say so.
   the learner's last A/B pick (a reward for choosing). NEVER the cliffhanger or
   its resolution — an image that summarizes the plot lets a reluctant reader skip
   the text.
+- **Style:** read the `Style:` line in `cast.md` — it names the live style and so
+  the files to use: `character/reference.<style>.png` and `<series>/style-anchor.<style>.png`.
+  Never mix refs across styles (a B&W anchor pulls a color prompt back to ink).
 - **Prompt:** one paragraph scene description (who, where, doing what, mood) +
-  the verbatim **Prompt spec** block of each cast member in the scene + the
-  pack's STYLE block + the NO-TEXT block from `characters/FORMAT.md` + an aspect
-  note (16:9 wide panel). Incidental characters are described inline.
+  the verbatim **Prompt spec (<style>)** block of each cast member in the scene +
+  that style's STYLE block + the NO-TEXT block from `characters/FORMAT.md` + an
+  aspect note (16:9 wide panel). Incidental characters are described inline.
 - **Generate** (backend auto-resolves: Codex CLI → Grok CLI → OpenRouter key):
 
 ```bash
 python3 <skill_dir>/scripts/illustrate.py --prompt-file /tmp/panel.txt \
-  --ref <series>/character/reference.png [--ref <series>/style-anchor.png] \
+  --ref <series>/character/reference.<style>.png [--ref <series>/style-anchor.<style>.png] \
   --out <series>/NNN-<slug>.png
 ```
 
 - **QA — reject and re-roll if:** any text/writing/pseudo-kanji appears anywhere
   (hard rule — garbled kanji breaks the "every character is known" contract);
-  a cast member is off-model; the scene spoils the cliffhanger.
-- The series' first accepted panel is copied to `<series>/style-anchor.png` and
-  passed as a second `--ref` on all later chapters, so the serial reads as one
-  artist.
+  a cast member is off-model; the scene spoils the cliffhanger; or — color styles —
+  the panel's palette drifts off the pack's recorded value ladder, so the figure
+  loses its silhouette in grayscale.
+- The first accepted panel *in the live style* is copied to
+  `<series>/style-anchor.<style>.png` and passed as a second `--ref` on all later
+  chapters, so the serial reads as one artist. A style switch starts a fresh
+  anchor; earlier chapters keep the art they shipped with.
 - **Embed** in the learner page AND (via regeneration) the furigana page —
   between the title heading and `<!-- story -->`, absolute path (pandoc resolves
   relative to CWD, not the file):
@@ -271,12 +306,20 @@ uv run --with fugashi --with unidic-lite <skill_dir>/scripts/furigana.py \
 It writes its own front matter (ruby macro, wide line spacing) — never hand-edit it;
 regenerate after any change to the learner file.
 
+- **One sentence per printed line.** End every story line with two trailing spaces
+  (markdown hard break) — without them pandoc reflows the chapter into a prose blob and
+  the sentence boundaries vanish, which is exactly what a learner who "reads nouns and
+  verbs only" cannot recover on their own. It costs about one page; pay it.
 - The A/B question is *in Japanese inside the story region* — it must pass validation
   too. The gloss box may include English meanings; it sits outside the story markers.
 - Badge count = `len(inventory.kanji)`; it grows with the learner — leave it in. The
   badge line (and every other line on the page — title, tables) must obey the kanji
   constraint like the story does; the validator checks the whole file. Write meta
   text in kana unless its kanji are known.
+- **Print single-sided.** The learner page exists to be read slowly and marked up (§8),
+  and the word sheet is meant to sit *beside* the story while reading — both jobs a
+  duplexed sheet makes worse. Ask for `simplex` when handing these to `cm-print`, and
+  note that colour panels want the colour printer.
 - **`pagefooter`** goes in every file's front matter: `<series title> その<N>` plus an
   edition tag (`· EN` / `· RO` / `· guide`; the furigana edition tags itself; the
   learner page carries no tag). Both renderers print it with a page number at every

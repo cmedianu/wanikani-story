@@ -1,0 +1,221 @@
+{
+ "id": "01-kana-core",
+ "title": "ことばパック 1 — かなの ことば",
+ "subtitle": "Word Pack 1 — kana words",
+ "intro": "These are all written in **kana**, so you can already read every one of them — no new kanji. They are the words the stories were missing: things to **do**, ways to **feel**, and words for **what something is like**. From the next chapter on they can turn up any time, without being listed as new words.",
+ "outro": "**つかいかた** — you don't have to memorise these. Read them once, then read the chapter. When one turns up you'll recognise it. That's enough.",
+ "groups": [
+  {
+   "title": "うごく／すること — Moving & Doing",
+   "words": [
+    [
+     "はしる",
+     "run"
+    ],
+    [
+     "にげる",
+     "run away, escape"
+    ],
+    [
+     "かくれる",
+     "hide"
+    ],
+    [
+     "さがす",
+     "look for"
+    ],
+    [
+     "みつける",
+     "find"
+    ],
+    [
+     "あける",
+     "open it"
+    ],
+    [
+     "しめる",
+     "close it"
+    ],
+    [
+     "つかむ",
+     "grab"
+    ],
+    [
+     "おちる",
+     "fall"
+    ],
+    [
+     "のぼる",
+     "climb"
+    ],
+    [
+     "とぶ",
+     "jump, fly"
+    ],
+    [
+     "うごく",
+     "move"
+    ],
+    [
+     "とまる",
+     "stop, halt"
+    ],
+    [
+     "おす",
+     "push"
+    ],
+    [
+     "さわる",
+     "touch"
+    ],
+    [
+     "ついていく",
+     "follow"
+    ],
+    [
+     "たすける",
+     "help, save"
+    ],
+    [
+     "まもる",
+     "protect"
+    ],
+    [
+     "こわす",
+     "break it"
+    ],
+    [
+     "きえる",
+     "disappear"
+    ],
+    [
+     "あらわれる",
+     "appear"
+    ]
+   ]
+  },
+  {
+   "title": "こえ／きもち — Voice & Feeling",
+   "words": [
+    [
+     "さけぶ",
+     "shout"
+    ],
+    [
+     "なく",
+     "cry"
+    ],
+    [
+     "わらう",
+     "laugh"
+    ],
+    [
+     "おこる",
+     "get angry"
+    ],
+    [
+     "おぼえる",
+     "remember"
+    ],
+    [
+     "わすれる",
+     "forget"
+    ],
+    [
+     "こたえる",
+     "answer"
+    ],
+    [
+     "はなす",
+     "talk, speak"
+    ]
+   ]
+  },
+  {
+   "title": "どんな？ — What it's like",
+   "words": [
+    [
+     "こわい",
+     "scary"
+    ],
+    [
+     "あぶない",
+     "dangerous"
+    ],
+    [
+     "くらい",
+     "dark"
+    ],
+    [
+     "ふかい",
+     "deep"
+    ],
+    [
+     "とおい",
+     "far"
+    ],
+    [
+     "はやい",
+     "fast"
+    ],
+    [
+     "おそい",
+     "slow, late"
+    ],
+    [
+     "つよい",
+     "strong"
+    ],
+    [
+     "よわい",
+     "weak"
+    ],
+    [
+     "しずか",
+     "quiet"
+    ],
+    [
+     "へん",
+     "strange"
+    ],
+    [
+     "すごい",
+     "amazing"
+    ],
+    [
+     "ひどい",
+     "awful"
+    ],
+    [
+     "つめたい",
+     "cold to the touch"
+    ]
+   ]
+  },
+  {
+   "title": "いつ／どうやって — When & How",
+   "words": [
+    [
+     "きゅうに",
+     "suddenly"
+    ],
+    [
+     "そっと",
+     "softly, quietly"
+    ],
+    [
+     "だんだん",
+     "little by little"
+    ],
+    [
+     "きっと",
+     "surely"
+    ],
+    [
+     "たぶん",
+     "probably"
+    ]
+   ]
+  }
+ ]
+}

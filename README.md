@@ -33,10 +33,11 @@ This skill:
 - **Adapts from comprehension feedback** — a 60-second verbal retell after each
   chapter (plus the coherence of their A/B choice) tells the generator what didn't
   land; failed words come back in friendlier contexts, silently.
-- **Optionally illustrates each chapter** — one B&W manga panel with a
-  *consistent recurring cast* (locked character specs + a reference model sheet
-  on every render), generated free through a logged-in Codex/Grok CLI or via
-  OpenRouter. Panels show the chapter's setup, never the cliffhanger — the image
+- **Optionally illustrates each chapter** — one manga panel with a *consistent
+  recurring cast* (locked character specs + a reference model sheet on every
+  render), in B&W ink or full color — the series picks one in its cast pack and
+  can switch back without losing the old sheets — generated free through a
+  logged-in Codex/Grok CLI or via OpenRouter. Panels show the chapter's setup, never the cliffhanger — the image
   is the hook to start reading, not a substitute for it. Hard rule: no text in
   images (AI pseudo-kanji would break the "every character is known" promise).
 
@@ -83,6 +84,38 @@ On Windows, run the skill under WSL: `bin/md2pdf` is a bash script, and WeasyPri
 on native Windows needs a separately installed GTK/Pango runtime. Everything works
 out of the box in a WSL Ubuntu shell.
 
+## Tracking how much they actually study
+
+A second skill, **`wanikani-progress`**, answers "how much has she studied this
+week?", "is he keeping up?", and "what does she keep getting wrong?".
+
+```bash
+ln -s "$(pwd)/progress" ~/.claude/skills/wanikani-progress
+python3 scripts/fetch_activity.py          # sync + snapshot
+python3 scripts/report_activity.py --period last-week
+```
+
+There's a catch worth knowing before you rely on it. WaniKani's per-review log
+(`/v2/reviews`) returns **zero records** for read-only tokens on some accounts, so
+daily review volume can't be queried after the fact. What the API does expose is
+per-subject cumulative answer counters — so `fetch_activity.py` snapshots those and
+diffs consecutive snapshots to recover exact answer and error counts per window,
+pinned to a day by each item's most recent review timestamp.
+
+The practical upshot: **history only starts accumulating once you start
+snapshotting.** Days before that show only how many items were *last* reviewed
+then — a floor, not a total — and the report labels them as such rather than
+quietly conflating the two. Lessons, Guru passes, burns and level dates are exact
+for all of history either way, so a report is useful from day one.
+
+`SKILL.md` step 1 takes a snapshot on every chapter run, which keeps the history
+dense for free. For a learner you generate chapters for irregularly, a daily cron
+entry is the more reliable option.
+
+Snapshots and derived state are disposable and gitignored; `activity/history.json`
+is the one file that cannot be rebuilt from the API, so it's committed with the
+rest of your learner data.
+
 ## The one important knob: grammar tier
 
 WaniKani teaches **zero grammar** — kanji knowledge is not reading ability. Set
@@ -96,6 +129,37 @@ WaniKani teaches **zero grammar** — kanji knowledge is not reading ability. Se
 
 When in doubt start low: a too-easy story is mildly boring; a too-hard story teaches
 a reluctant reader that reading isn't for them.
+
+## Why chapter 3 gets boring — and the fix
+
+Run this for a few chapters and you'll hit a wall that looks like "we've used every
+sentence the kanji allow." That diagnosis is wrong, and the real one matters.
+
+WaniKani's low levels are **noun-heavy**. A level-6 learner in our testing knew 173
+kanji and 403 words — but **282 of those words were nouns**, leaving ~60 verbs and
+~35 adjectives. None of the 60 were *run, hide, find, shout, grab, escape, protect*.
+You cannot write an adventure serial with the verb set of a filing cabinet, no matter
+how many nouns you have.
+
+The fix rests on an asymmetry the constraint had accidentally collapsed: **a learner
+who reads kana can read any word written in kana**, whether or not WaniKani has
+taught it. That's how Japanese children's books work — hard limits on kanji, none on
+kana vocabulary. So the kanji rule stays absolute; the *word* rule loosens.
+
+```bash
+python3 scripts/wordpack.py --render    # after your first inventory sync
+```
+
+This installs a pack of high-frequency kana verbs and adjectives, **drops the ones
+your learner already knows**, writes a one-page printable sheet, and adds the rest to
+`allowlist_extra` so the generator can use them without spending gloss budget. Print
+the sheet and hand it over before the next chapter — pre-teaching is what makes the
+words free rather than confusing.
+
+Why a pack rather than simply raising `max_new_words`: a 350-character chapter holds
+only ~70 content words, so 20 unfamiliar ones inside the story would be ~25% unknown
+and unreadable. Graded readers hold ~95% known coverage. Teach outside the story, use
+freely inside it.
 
 ## How the constraint actually works
 
@@ -126,6 +190,11 @@ scripts/validate.py         # story vs inventory (kanji hard-check + fugashi wor
 scripts/furigana.py         # learner page → furigana edition (ruby over every kanji)
 scripts/illustrate.py       # prompt + reference sheet → one panel (codex/grok/openrouter)
 scripts/render.py           # chapter markdown → PDF (WeasyPrint; no LaTeX needed)
+scripts/wordpack.py         # install a kana word pack (see "Why chapter 3 gets boring")
+wordpacks/*.json            # shipped word packs, filtered per learner on install
+progress/SKILL.md           # second skill: study-activity reporting
+scripts/fetch_activity.py   # WaniKani API → activity snapshots + daily history
+scripts/report_activity.py  # activity history → report for any period (no network)
 ```
 
 All learner data (token, profile, generated chapters, series state, character
