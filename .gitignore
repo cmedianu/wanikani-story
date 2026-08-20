@@ -15,6 +15,7 @@ data/
 cache/
 inventory.json
 series/
+activity/
 
 # Python
 __pycache__/
